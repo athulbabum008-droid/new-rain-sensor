@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Smart Rain Detection and Weather Alert System — Arduino course project">
+  <title>Smart Rain | Arduino Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #10202f;
+      --muted: #667684;
+      --blue: #176b87;
+      --blue-light: #dff3f6;
+      --green: #2ba84a;
+      --yellow: #f0b323;
+      --red: #df4e45;
+      --paper: #f6f8f6;
+      --white: #ffffff;
+      --line: #dde6e5;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "DM Sans", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .container { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+
+    nav {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(16,32,47,.08);
+      background: rgba(246,248,246,.92);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 11px; font-family: Manrope, sans-serif; font-weight: 800; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 11px; background: var(--blue);
+      display: grid; place-items: center; color: white;
+      box-shadow: 0 8px 18px rgba(23,107,135,.18);
+    }
+    .brand-mark svg { width: 22px; }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 600; }
+    .nav-links a:hover { color: var(--blue); }
+
+    .hero { padding: 82px 0 72px; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 64px; align-items: center; }
+    .eyebrow { color: var(--blue); font-size: 13px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; }
+    h1, h2, h3 { font-family: Manrope, sans-serif; }
+    h1 { font-size: clamp(44px, 5.8vw, 74px); line-height: 1.02; letter-spacing: -3.5px; margin: 18px 0 22px; }
+    h1 span { color: var(--blue); }
+    .hero-copy > p { max-width: 590px; color: var(--muted); font-size: 18px; line-height: 1.75; }
+    .hero-actions { display: flex; align-items: center; gap: 22px; margin-top: 32px; }
+    .btn { display: inline-flex; align-items: center; gap: 9px; padding: 14px 20px; border-radius: 10px; background: var(--ink); color: white; text-decoration: none; font-weight: 700; font-size: 14px; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(16,32,47,.16); }
+    .text-link { color: var(--ink); font-size: 14px; font-weight: 700; text-decoration: none; border-bottom: 1px solid var(--ink); padding-bottom: 3px; }
+
+    .hero-visual { position: relative; }
+    .hero-card { border-radius: 24px; overflow: hidden; background: #e8eceb; box-shadow: 0 24px 60px rgba(30,54,65,.14); }
+    .hero-card img { display: block; width: 100%; height: 430px; object-fit: cover; }
+    .status-chip { position: absolute; left: -28px; bottom: 28px; background: white; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 14px 35px rgba(16,32,47,.16); }
+    .status-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 5px #e6f5e9; }
+    .status-chip strong { display: block; font-size: 13px; }
+    .status-chip span { color: var(--muted); font-size: 11px; }
+
+    section { padding: 76px 0; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; margin-bottom: 34px; }
+    .section-head h2 { font-size: clamp(32px, 4vw, 48px); letter-spacing: -2px; margin: 10px 0 0; }
+
+    #overview { background: var(--white); }
+    .overview-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 80px; }
+    .overview-grid > p { font-size: 21px; line-height: 1.7; margin: 0; }
+    .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .feature { padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: #fbfcfb; }
+    .feature-num { color: var(--blue); font-size: 12px; font-weight: 800; }
+    .feature h3 { margin: 24px 0 8px; font-size: 17px; }
+    .feature p { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0; }
+
+    .components-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .component-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 22px; min-height: 155px; }
+    .component-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--blue-light); display: grid; place-items: center; color: var(--blue); font-weight: 800; }
+    .component-card h3 { font-size: 16px; margin: 18px 0 6px; }
+    .component-card p { color: var(--muted); font-size: 13px; margin: 0; }
+
+    #how-it-works { background: var(--ink); color: white; }
+    #how-it-works .eyebrow { color: #89ccd9; }
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 44px; }
+    .step { position: relative; padding-right: 30px; }
+    .step:not(:last-child)::after { content:""; position:absolute; height:1px; background:#3d4d59; left:48px; right:12px; top:25px; }
+    .step-number { width: 50px; height: 50px; border: 1px solid #536570; border-radius: 50%; display: grid; place-items: center; color: #9ed7e1; font-weight: 800; position: relative; z-index: 2; background: var(--ink); }
+    .step h3 { margin: 22px 0 10px; font-size: 17px; }
+    .step p { color: #afbbc4; line-height: 1.65; font-size: 14px; }
+
+    .intensity-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .intensity { border-radius: 18px; padding: 28px; background: white; border: 1px solid var(--line); }
+    .intensity-top { display: flex; justify-content: space-between; align-items: center; }
+    .led { width: 18px; height: 18px; border-radius: 50%; }
+    .led.green { background: var(--green); box-shadow: 0 0 15px rgba(43,168,74,.55); }
+    .led.yellow { background: var(--yellow); box-shadow: 0 0 15px rgba(240,179,35,.55); }
+    .led.red { background: var(--red); box-shadow: 0 0 15px rgba(223,78,69,.55); }
+    .intensity small { color: var(--muted); font-weight: 700; }
+    .intensity h3 { margin: 32px 0 8px; }
+    .intensity p { color: var(--muted); line-height: 1.6; font-size: 14px; }
+
+    .gallery-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .gallery-item { margin: 0; border-radius: 18px; overflow: hidden; background: white; border: 1px solid var(--line); }
+    .gallery-item img { width: 100%; height: 310px; object-fit: cover; display: block; cursor: zoom-in; }
+    .gallery-item figcaption { padding: 15px 17px; font-size: 13px; color: var(--muted); }
+
+    #code { background: white; }
+    .code-grid { display: grid; grid-template-columns: .75fr 1.25fr; gap: 40px; align-items: center; }
+    .code-copy p { color: var(--muted); line-height: 1.7; }
+    .code-box { background: #111d25; color: #d8e5e9; border-radius: 18px; padding: 24px; overflow: auto; font: 13px/1.65 monospace; height: 390px; box-shadow: 0 20px 45px rgba(16,32,47,.12); }
+    .code-box code { white-space: pre; }
+
+    footer { background: #0b171f; color: white; padding: 42px 0; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; }
+    footer p { color: #9aabba; font-size: 13px; }
+
+    .modal { position: fixed; inset: 0; background: rgba(5,13,18,.92); z-index: 100; display: none; place-items: center; padding: 32px; }
+    .modal.open { display: grid; }
+    .modal img { max-width: 92vw; max-height: 88vh; border-radius: 12px; }
+    .modal-close { position: absolute; right: 28px; top: 22px; width: 42px; height: 42px; border: 0; border-radius: 50%; background: white; font-size: 22px; cursor: pointer; }
+
+    @media (max-width: 900px) {
+      .hero-grid, .overview-grid, .code-grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 48px; }
+      .hero-card img { height: 380px; }
+      .components-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid { grid-template-columns: 1fr; }
+      .gallery-item img { height: 420px; }
+      .overview-grid { gap: 34px; }
+    }
+    @media (max-width: 620px) {
+      .container { width: min(100% - 32px, 1120px); }
+      .nav-links { display: none; }
+      h1 { letter-spacing: -2px; }
+      .hero-actions { align-items: flex-start; flex-direction: column; }
+      .status-chip { left: 14px; }
+      .feature-grid, .components-grid, .intensity-grid, .steps { grid-template-columns: 1fr; }
+      .steps { gap: 28px; }
+      .step:not(:last-child)::after { display: none; }
+      .section-head { align-items: flex-start; }
+      .gallery-item img { height: 300px; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container nav-inner">
+      <div class="brand">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3S6 10 6 15a6 6 0 0012 0c0-5-6-12-6-12z"/><path d="M9.5 16.5a3 3 0 002.5 1.5"/></svg>
+        </span>
+        Smart Rain
+      </div>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#components">Components</a>
+        <a href="#gallery">Build Gallery</a>
+        <a href="#code">Code</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <div class="eyebrow">Arduino Course Project</div>
+        <h1>Smart Rain <span>Detection</span> System</h1>
+        <p>An Arduino-based weather alert system that detects rainfall intensity and gives clear visual and on-screen warnings.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#how-it-works">Explore the system <span>→</span></a>
+          <a class="text-link" href="#gallery">View build photos</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card"><img src="1.jpeg" alt="Complete Arduino rain detection system under test"></div>
+        <div class="status-chip"><span class="status-dot"></span><div><strong>System operational</strong><span>Live sensor monitoring</span></div></div>
+      </div>
+    </div>
+  </header>
+
+  <section id="overview">
+    <div class="container">
+      <div class="overview-grid">
+        <div>
+          <div class="eyebrow">Project overview</div>
+          <div class="section-head"><h2>A simple idea.<br>A useful solution.</h2></div>
+        </div>
+        <p>This project helps identify dry, light rain and heavy rain conditions. The rain sensor sends readings to the Arduino, while the LCD and LEDs provide immediate feedback.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature"><div class="feature-num">01</div><h3>Real-time detection</h3><p>Continuously measures rain sensor output.</p></article>
+        <article class="feature"><div class="feature-num">02</div><h3>Clear display</h3><p>Shows the weather state and rain level on LCD.</p></article>
+        <article class="feature"><div class="feature-num">03</div><h3>Visual alerts</h3><p>Uses green, yellow and red LEDs for status.</p></article>
+        <article class="feature"><div class="feature-num">04</div><h3>Problem solving</h3><p>Demonstrates analog input and conditional logic.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="components">
+    <div class="container">
+      <div class="section-head"><div><div class="eyebrow">Required hardware</div><h2>System components</h2></div></div>
+      <div class="components-grid">
+        <article class="component-card"><div class="component-icon">A</div><h3>Arduino UNO</h3><p>Main controller for the project</p></article>
+        <article class="component-card"><div class="component-icon">R</div><h3>Rain Sensor</h3><p>Analog moisture detector</p></article>
+        <article class="component-card"><div class="component-icon">16×2</div><h3>LCD Display</h3><p>Shows rain status and level</p></article>
+        <article class="component-card"><div class="component-icon">LED</div><h3>LED Indicators</h3><p>Green, yellow and red warnings</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works">
+    <div class="container">
+      <div class="eyebrow">Working principle</div>
+      <div class="section-head"><h2>How it works</h2></div>
+      <div class="steps">
+        <article class="step"><div class="step-number">1</div><h3>Sensor detects water</h3><p>The rain sensor resistance changes when water reaches its surface.</p></article>
+        <article class="step"><div class="step-number">2</div><h3>Arduino reads value</h3><p>The analog input converts the sensor signal into a numerical value.</p></article>
+        <article class="step"><div class="step-number">3</div><h3>Program compares data</h3><p>Conditions classify the result as dry, light rain or heavy rain.</p></article>
+        <article class="step"><div class="step-number">4</div><h3>System gives alert</h3><p>The LCD and corresponding LED update automatically.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="status">
+    <div class="container">
+      <div class="section-head"><div><div class="eyebrow">Alert levels</div><h2>Weather status</h2></div></div>
+      <div class="intensity-grid">
+        <article class="intensity"><div class="intensity-top"><span class="led green"></span><small>LEVEL 0</small></div><h3>No Rain</h3><p>Green LED remains on when the sensor reading indicates dry conditions.</p></article>
+        <article class="intensity"><div class="intensity-top"><span class="led yellow"></span><small>LEVEL 1</small></div><h3>Light Rain</h3><p>Yellow LED indicates a moderate sensor reading and possible rainfall.</p></article>
+        <article class="intensity"><div class="intensity-top"><span class="led red"></span><small>LEVEL 2</small></div><h3>Heavy Rain</h3><p>Red LED warns when the sensor detects significant water coverage.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <div class="container">
+      <div class="section-head"><div><div class="eyebrow">Physical construction</div><h2>Project in action</h2></div></div>
+      <div class="gallery-grid">
+        <figure class="gallery-item"><img src="1.jpeg" alt="Arduino project showing the complete wiring"><figcaption>01 — Complete assembled system</figcaption></figure>
+        <figure class="gallery-item"><img src="2.jpeg" alt="LCD showing no rain condition"><figcaption>02 — LCD displaying “Rain: None”</figcaption></figure>
+        <figure class="gallery-item"><img src="3.jpeg" alt="LCD showing light rain condition"><figcaption>03 — LCD displaying “Rain: Light”</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="code">
+    <div class="container code-grid">
+      <div class="code-copy">
+        <div class="eyebrow">Arduino sketch</div>
+        <h2>Simple, readable logic</h2>
+        <p>The Arduino reads an analog sensor value and uses threshold ranges to select the weather condition and LED output.</p>
+      </div>
+      <div class="code-box"><code><span style="color:#82b9c7">// Smart Rain Detection System</span>
+int rainSensor = A0;
+int greenLED = 8;
+int yellowLED = 9;
+int redLED = 10;
+
+void setup() {
+  pinMode(greenLED, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+}
+
+void loop() {
+  int rainValue = analogRead(rainSensor);
+
+  digitalWrite(greenLED, LOW);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, LOW);
+
+  if (rainValue &gt; 800) {
+    digitalWrite(greenLED, HIGH);
+  } else if (rainValue &gt; 400) {
+    digitalWrite(yellowLED, HIGH);
+  } else {
+    digitalWrite(redLED, HIGH);
+  }
+
+  delay(500);
+}</code></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="brand"><span class="brand-mark">R</span> Smart Rain</div>
+      <p>Arduino Course Project • Smart Rain Detection and Weather Alert System</p>
+    </div>
+  </footer>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Expanded project image">
+    <button class="modal-close" id="modalClose" aria-label="Close image">×</button>
+    <img id="modalImage" src="" alt="Expanded project photograph">
+  </div>
+
+  <script>
+    const modal = document.getElementById('modal');
+    const modalImage = document.getElementById('modalImage');
+    document.querySelectorAll('.gallery-item img').forEach(image => {
+      image.addEventListener('click', () => {
+        modalImage.src = image.src;
+        modalImage.alt = image.alt;
+        modal.classList.add('open');
+      });
+    });
+    document.getElementById('modalClose').addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', event => { if (event.target === modal) modal.classList.remove('open'); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') modal.classList.remove('open'); });
+  </script>
+</body>
+</html>
